@@ -26,7 +26,7 @@ class TestRollback(unittest.TestCase):
     def test_cleanup_removes_only_owned_state(self):
         with self.fakepaths() as (state,ctl,un):
             state.mkdir()
-            (state/'config.json').write_text('''{"container":"amnezia-awg2","awg_if":"awg0","awg_addr":"10.8.32.0","awg_net":"10.8.32.0/24","mt_port":5443,"tunnel_port":5443,"ssh_port":2225,"awg_udp_port":443,"moscow_ips":[],"bridge_if":"","bridge_ip":"","update_at":"04:25"}''')
+            (state/'config.json').write_text('''{"container":"amnezia-awg2","awg_if":"awg0","awg_addr":"10.66.44.1","awg_net":"10.66.44.0/24","mt_port":5443,"tunnel_port":5443,"ssh_port":22,"awg_udp_port":443,"moscow_ips":[],"bridge_if":"","bridge_ip":"","update_at":"04:25"}''')
             ctl.write_text('# EUAG3-MANAGED\n');un.write_text('# EUAG3-MANAGED\n')
             calls=[]
             with patch.object(m,'run',side_effect=lambda a,**kw: NS(returncode=0,stdout='',stderr='')),\
@@ -42,7 +42,7 @@ class TestRollback(unittest.TestCase):
     def test_cleanup_refuses_to_claim_complete_on_error(self):
         with self.fakepaths() as (state,ctl,un):
             state.mkdir(); (state/'backup').mkdir()
-            (state/'config.json').write_text('''{"container":"amnezia-awg2","awg_if":"awg0","awg_addr":"10.8.32.0","awg_net":"10.8.32.0/24","mt_port":5443,"tunnel_port":5443,"ssh_port":2225,"awg_udp_port":443,"moscow_ips":[],"bridge_if":"","bridge_ip":"","update_at":"04:25"}''')
+            (state/'config.json').write_text('''{"container":"amnezia-awg2","awg_if":"awg0","awg_addr":"10.66.44.1","awg_net":"10.66.44.0/24","mt_port":5443,"tunnel_port":5443,"ssh_port":22,"awg_udp_port":443,"moscow_ips":[],"bridge_if":"","bridge_ip":"","update_at":"04:25"}''')
             with patch.object(m,'run',side_effect=lambda a,**kw: NS(returncode=0,stdout='',stderr='')),\
                  patch.object(m,'clean_container_rules',side_effect=RuntimeError('Docker offline')),\
                  patch.object(m,'clean_host_rules'),patch.object(m,'restore_network'):
@@ -54,14 +54,14 @@ class TestRollback(unittest.TestCase):
         with self.fakepaths() as (state,ctl,un):
             args=argparse.Namespace(**{x:None for x in ['container','awg_interface','awg_address','awg_cidr','mt_port','tunnel_port','ssh_port','awg_udp_port','bridge_ip','bridge_if','moscow_ips','update_at']},fix_ifupdown=False,dry_run=False)
             def fake_fetch(folder):
-                (folder/'ru4.zone').write_text('8.8.8.0/24\n')
+                (folder/'ru4.zone').write_text('192.0.2.0/24\n')
                 (folder/'ru6.zone').write_text('2001:db8::/32\n')
                 return folder/'ru4.zone',folder/'ru6.zone'
             calls=[]
             def docker_cip(c,*a,**kw):return NS(returncode=0,stdout='',stderr='')
             def fake_run(a,**kw):return NS(returncode=0,stdout='',stderr='')
-            with patch.object(m,'need_tools'),patch.object(m,'detect_defaults',return_value=('10.8.32.0','10.8.32.0/24')),\
-                 patch.object(m,'check_install',return_value={'docker_dev':'eth0','gateway':'172.29.172.1','docker_ip':'172.29.172.2','host_if':'amn0'}),\
+            with patch.object(m,'need_tools'),patch.object(m,'detect_defaults',return_value=('10.66.44.1','10.66.44.0/24')),\
+                 patch.object(m,'check_install',return_value={'docker_dev':'eth0','gateway':'172.30.50.1','docker_ip':'172.30.50.2','host_if':'amn0'}),\
                  patch.object(m,'cip',side_effect=docker_cip),patch.object(m,'ipt',side_effect=lambda *a,**k:NS(returncode=1,stdout='',stderr='')),\
                  patch.object(m,'ipset_exists',return_value=False),patch.object(m,'is_ifupdown_conflict',return_value=False),\
                  patch.object(m,'output',return_value=''),patch.object(m,'download_lists',side_effect=fake_fetch),\

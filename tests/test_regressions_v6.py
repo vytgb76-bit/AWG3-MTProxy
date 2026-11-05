@@ -13,16 +13,16 @@ SPEC=importlib.util.spec_from_file_location('euag3v6',str(Path(__file__).resolve
 m=importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(m)
 
-CONF={"container":"amnezia-awg2","awg_if":"awg0","awg_addr":"10.8.32.0",
-      "awg_net":"10.8.32.0/24","mt_port":5443,"tunnel_port":5443,
-      "ssh_port":2225,"awg_udp_port":443,"moscow_ips":[],"bridge_if":"",
+CONF={"container":"amnezia-awg2","awg_if":"awg0","awg_addr":"10.66.44.1",
+      "awg_net":"10.66.44.0/24","mt_port":5443,"tunnel_port":5443,
+      "ssh_port":22,"awg_udp_port":443,"moscow_ips":[],"bridge_if":"",
       "bridge_ip":"","update_at":"04:25"}
 
 class TestV6Regressions(unittest.TestCase):
     def test_existing_empty_ipsets_restore_from_disk(self):
         with tempfile.TemporaryDirectory() as tmp:
             state=Path(tmp)
-            (state/'ru4.zone').write_text('8.8.8.0/24\n')
+            (state/'ru4.zone').write_text('192.0.2.0/24\n')
             (state/'ru6.zone').write_text('2001:db8::/32\n')
             with patch.object(m,'STATE',state),patch.object(m,'ipset_count',side_effect=[0,0,8664,2182]),\
                  patch.object(m,'update_sets') as upd,patch.object(m,'ensure_chain'),\
@@ -105,7 +105,7 @@ class TestV6Regressions(unittest.TestCase):
             with patch.object(m,'STATE',state),patch.object(m,'CONFIG',state/'config.json'),\
                  patch.object(m,'cip',side_effect=RuntimeError('simulated first rule failure')):
                 with self.assertRaisesRegex(RuntimeError,'simulated first rule failure'):
-                    m.ensure_bridge_container(CONF,{'gateway':'172.29.172.1','docker_dev':'eth0'})
+                    m.ensure_bridge_container(CONF,{'gateway':'172.30.50.1','docker_dev':'eth0'})
             self.assertTrue((state/'container-touched').exists())
 
 if __name__=='__main__':unittest.main(verbosity=2)

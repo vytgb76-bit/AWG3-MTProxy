@@ -61,8 +61,8 @@ class TestRules(unittest.TestCase):
     def test_container_rules_survive_reconciliation(self):
         fw=FW()
         c={'container':'amnezia-awg2','tunnel_port':5443,'mt_port':5443,'awg_if':'awg0',
-           'awg_addr':'10.8.32.0','awg_net':'10.8.32.0/24'}
-        net={'docker_dev':'eth0','gateway':'172.29.172.1'}
+           'awg_addr':'10.66.44.1','awg_net':'10.66.44.0/24'}
+        net={'docker_dev':'eth0','gateway':'172.30.50.1'}
         with patch.object(m,'cip',side_effect=lambda c,*a,**k: fw.call(*a,**k)):
             m.ensure_bridge_container(c,net)
             initial={k:[list(x) for x in v] for k,v in fw.rules.items()}
@@ -95,7 +95,7 @@ class TestRules(unittest.TestCase):
         fw=FW()
         fw.data('filter','EG3_IN').append(['-m','comment','--comment','euag3guard:drop','-j','DROP'])
         c={'mt_port':5443}
-        net={'host_if':'amn0','docker_ip':'172.29.172.2','gateway':'172.29.172.1'}
+        net={'host_if':'amn0','docker_ip':'172.30.50.2','gateway':'172.30.50.1'}
         with patch.object(m,'ipt',side_effect=lambda fam,*a,**k:fw.call(*a,**k)):
             m.ensure_bridge_host(c,net)
             old={k:[list(x) for x in v] for k,v in fw.rules.items()}
@@ -104,11 +104,11 @@ class TestRules(unittest.TestCase):
             self.assertEqual(len(fw.data('filter','EG3_IN')),2)
 
     def test_config_validation(self):
-        base={'container':'amnezia-awg2','awg_if':'awg0','awg_addr':'10.8.32.0','awg_net':'10.8.32.2/24',
-              'mt_port':'5443','tunnel_port':'5443','ssh_port':'2225','awg_udp_port':'443',
+        base={'container':'amnezia-awg2','awg_if':'awg0','awg_addr':'10.66.44.1','awg_net':'10.66.44.2/24',
+              'mt_port':'5443','tunnel_port':'5443','ssh_port':'22','awg_udp_port':'443',
               'moscow_ips':[],'bridge_if':'','bridge_ip':'','update_at':'04:25'}
         c=m.validate_config(base)
-        self.assertEqual(c['awg_net'],'10.8.32.0/24')
+        self.assertEqual(c['awg_net'],'10.66.44.0/24')
         self.assertIn('04:25:00 UTC',m.units_content(c)['euag3-update.timer'])
         for key,value in [('mt_port','0'),('ssh_port','65536'),('update_at','25:25'),('awg_addr','not.an.ip')]:
             with self.subTest(key=key), self.assertRaises(Exception):
@@ -117,9 +117,9 @@ class TestRules(unittest.TestCase):
     def test_udp_moscow_exception_survives_iptables_format(self):
         self.assertEqual(m.normalized_rule(['-p','udp','--sport','443']),
                          m.normalized_rule(['-p','udp','-m','udp','--sport','443']))
-        c={'moscow_ips':['195.209.213.96'],'awg_udp_port':443}
-        net={'docker_ip':'172.29.172.2'}
-        existing=['-s','172.29.172.2/32','-d','195.209.213.96/32',
+        c={'moscow_ips':['198.51.100.96'],'awg_udp_port':443}
+        net={'docker_ip':'172.30.50.2'}
+        existing=['-s','172.30.50.2/32','-d','198.51.100.96/32',
                   '-p','udp','-m','udp','--sport','443',
                   '-m','comment','--comment',m.TAG+':awg-peer','-j','RETURN']
         seen=[]
