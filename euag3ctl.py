@@ -757,7 +757,7 @@ def detect_defaults(container,awg_if):
         a=next(x for i in ips if i.get('ifname')==awg_if for x in i.get('addr_info',[])
                if x.get('family')=='inet')
         return a['local'],a['local']+'/'+str(a['prefixlen'])
-    except Exception: return '10.8.32.0','10.8.32.0/24'
+    except Exception: return '10.66.44.1','10.66.44.0/24'
 
 
 def install(args):
@@ -774,7 +774,7 @@ def install(args):
     pre['awg_net']=args.awg_cidr or prompt('AWG client CIDR',netdef)
     pre['mt_port']=args.mt_port or prompt('MTProxyL host TCP port','5443')
     pre['tunnel_port']=args.tunnel_port or prompt('Port for AWG clients to reach MTProxyL',pre['mt_port'])
-    pre['ssh_port']=args.ssh_port or prompt('Current SSH TCP port (check only, never change)','2225')
+    pre['ssh_port']=args.ssh_port or prompt('Current SSH TCP port (check only, never change)','22')
     pre['awg_udp_port']=args.awg_udp_port or prompt('AWG server UDP port','443')
     peers=args.moscow_ips
     if peers is None: peers=prompt('Future Moscow public IPv4(s), comma-separated (optional)','')

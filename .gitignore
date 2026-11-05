@@ -1,0 +1,54 @@
+# Local Python files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Local credentials and deployment settings
+.env
+.env.*
+!.env.example
+*secret*
+*credentials*
+*.pem
+*.key
+*.p12
+*.pfx
+*.ovpn
+*.mobileconfig
+*.conf.local
+config.json
+*.db
+*.sqlite
+*.sqlite3
+
+# Server state, logs, backups, captures and personal artifacts
+*.log
+*.bak
+*.backup
+*.old
+*.zone
+*.pcap
+*.pcapng
+*.dump
+*.swp
+*.swo
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+state/
+backup/
+backups/
+diagnostics/
+logs/
+var/
+
+# Editor/OS caches
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
